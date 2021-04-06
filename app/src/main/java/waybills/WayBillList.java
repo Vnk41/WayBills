@@ -55,7 +55,7 @@ public class WayBillList extends AppCompatActivity {
         //db.close();
     }
 
-
+    //не получилось разобраться с AsyncTask в этом случае, попробовать все-таки так реализовать
     class GetWayBillDataTask extends AsyncTask<Context, Void, Cursor> {
         //private final WayBillList context;
         //public GetWayBillDataTask(Context context){
