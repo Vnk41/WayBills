@@ -29,13 +29,18 @@ public class WayBillList extends AppCompatActivity {
         MainActivity.DBHelper dbHelper;
         dbHelper = new MainActivity.DBHelper(this);
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor c = db.rawQuery("select * from waybill", null);
-        String[] headers = new String[] {"number"};
-
-        SimpleCursorAdapter userAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1, c, headers,
-                new int[] {android.R.id.text1}, 0);
-
-        listView.setAdapter(userAdapter);
+        db.beginTransaction();
+        try{
+            Cursor c = db.rawQuery("select * from waybill", null);
+            String[] headers = new String[] {"number"};
+            SimpleCursorAdapter userAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1, c, headers,
+                    new int[] {android.R.id.text1}, 0);
+            listView.setAdapter(userAdapter);
+            db.setTransactionSuccessful();
+        }
+        finally {
+            db.endTransaction();
+        }
         Intent WayBillInfoIntent = new Intent(this, WayBillInfo.class);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

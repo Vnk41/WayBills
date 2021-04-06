@@ -74,18 +74,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         protected Void doInBackground(Void... voids) {
             SQLiteDatabase db = dbHelper.getWritableDatabase();
-            db.execSQL("create table if not exists waybill ("
-                    + "_id integer primary key autoincrement,"
-                    + "number integer,"
-                    + "gas_in_tank real,"
-                    + "mileage real"
-                    + ");");
-            db.execSQL("create table if not exists destination ("
-                    + "_id integer primary key autoincrement,"
-                    + "waybill_id integer, "
-                    + "destination_point string,"
-                    + "mileage real"
-                    + ");");
+            db.beginTransaction();
+            try {
+                db.execSQL("create table if not exists waybill ("
+                        + "_id integer primary key autoincrement,"
+                        + "number integer,"
+                        + "gas_in_tank real,"
+                        + "mileage real"
+                        + ");");
+                db.execSQL("create table if not exists destination ("
+                        + "_id integer primary key autoincrement,"
+                        + "waybill_id integer, "
+                        + "destination_point string,"
+                        + "mileage real"
+                        + ");");
+                db.setTransactionSuccessful();
+            }
+            finally {
+                db.endTransaction();
+            }
             return null;
         }
     }

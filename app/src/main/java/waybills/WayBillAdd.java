@@ -67,11 +67,18 @@ public class WayBillAdd extends AppCompatActivity implements View.OnClickListene
     class AddWayBillTask extends AsyncTask<String, Void, Void> {
         @Override
         protected Void doInBackground(String... strings) {
-            ContentValues cv = new ContentValues();
-            cv.put("number", Integer.parseInt(strings[0]));
-
             SQLiteDatabase db = dbHelper.getWritableDatabase();
-            db.insert("waybill", null, cv);
+            db.beginTransaction();
+            try {
+                ContentValues cv = new ContentValues();
+                cv.put("number", Integer.parseInt(strings[0]));
+                db.insertOrThrow("waybill", null, cv);
+                db.setTransactionSuccessful();
+            }
+            finally {
+                db.endTransaction();
+            }
+            db.close();
             /*SQLiteDatabase db = dbHelper.getReadableDatabase();
             Cursor c = db.rawQuery("select * from waybill", null);
             int id = c.getColumnIndex("_id");
@@ -90,22 +97,35 @@ public class WayBillAdd extends AppCompatActivity implements View.OnClickListene
         @Override
         protected Void doInBackground(String... strings) {
             SQLiteDatabase dbRead = dbHelper.getReadableDatabase();
-            Cursor c = dbRead.rawQuery("select * from waybill where number = ?", new String[] {strings[0]});
-            int id = c.getColumnIndex("_id");
-            int number = c.getColumnIndex("number");
-            while (c.moveToNext()) {
-                //System.out.println(c.getInt(id));
-                //System.out.println(c.getInt(number));
-                WayBillNumberParam = String.valueOf(c.getInt(id));
+            dbRead.beginTransaction();
+            try {
+                Cursor c = dbRead.rawQuery("select * from waybill where number = ?", new String[]{strings[0]});
+                int id = c.getColumnIndex("_id");
+                int number = c.getColumnIndex("number");
+                while (c.moveToNext()) {
+                    //System.out.println(c.getInt(id));
+                    //System.out.println(c.getInt(number));
+                    WayBillNumberParam = String.valueOf(c.getInt(id));
+                }
+                dbRead.setTransactionSuccessful();
             }
-
-            ContentValues cv = new ContentValues();
+            finally {
+                dbRead.endTransaction();
+            }
             SQLiteDatabase dbWrite = dbHelper.getWritableDatabase();
-            cv.put("waybill_id", WayBillNumberParam);
-            cv.put("destination_point", strings[1]);
-            cv.put("mileage", strings[2]);
-            long rowID = dbWrite.insert("destination", null, cv);
-            System.out.println(rowID);
+            dbWrite.beginTransaction();
+            try {
+                ContentValues cv = new ContentValues();
+                cv.put("waybill_id", WayBillNumberParam);
+                cv.put("destination_point", strings[1]);
+                cv.put("mileage", strings[2]);
+                long rowID = dbWrite.insertOrThrow("destination", null, cv);
+                System.out.println(rowID);
+                dbWrite.setTransactionSuccessful();
+            }
+            finally {
+                dbWrite.endTransaction();
+            }
 
             /*SQLiteDatabase dbReadDest = dbHelper.getReadableDatabase();
             Cursor c3 = dbReadDest.rawQuery("select * from destination", null);
@@ -130,22 +150,37 @@ public class WayBillAdd extends AppCompatActivity implements View.OnClickListene
         String WayBillNumberParam;
         @Override
         protected Void doInBackground(String... strings) {
-            SQLiteDatabase db2 = dbHelper.getReadableDatabase();
-            Cursor c = db2.rawQuery("select * from waybill where number = ?", new String[] {strings[0]});
-            int id = c.getColumnIndex("_id");
-            int number = c.getColumnIndex("number");
-            while (c.moveToNext()) {
-                //System.out.println(c.getInt(id));
-                //System.out.println(c.getInt(number));
-                WayBillNumberParam = String.valueOf(c.getInt(id));
+            SQLiteDatabase dbReadInfo = dbHelper.getReadableDatabase();
+            dbReadInfo.beginTransaction();
+            try{
+                Cursor c = dbReadInfo.rawQuery("select * from waybill where number = ?", new String[] {strings[0]});
+                int id = c.getColumnIndex("_id");
+                int number = c.getColumnIndex("number");
+                while (c.moveToNext()) {
+                    //System.out.println(c.getInt(id));
+                    //System.out.println(c.getInt(number));
+                    WayBillNumberParam = String.valueOf(c.getInt(id));
+                }
+                dbReadInfo.setTransactionSuccessful();
+                System.out.println(WayBillNumberParam);
+
             }
-            System.out.println(WayBillNumberParam);
-            ContentValues cv = new ContentValues();
+            finally {
+                dbReadInfo.endTransaction();
+            }
             SQLiteDatabase db = dbHelper.getWritableDatabase();
-            cv.put("mileage", strings[1]);
-            cv.put("gas_in_tank", strings[2]);
-            //Cursor c2 = db.rawQuery("update waybill set mileage = ?, gas_in_tank = ? where waybill_id = ?", new String[] {strings[2], strings[1], WayBillNumberParam});
-            db.update("waybill", cv, "_id = ?", new String[] {WayBillNumberParam});
+            db.beginTransaction();
+            try {
+                ContentValues cv = new ContentValues();
+                cv.put("mileage", strings[1]);
+                cv.put("gas_in_tank", strings[2]);
+                //Cursor c2 = db.rawQuery("update waybill set mileage = ?, gas_in_tank = ? where waybill_id = ?", new String[] {strings[2], strings[1], WayBillNumberParam});
+                db.update("waybill", cv, "_id = ?", new String[] {WayBillNumberParam});
+                db.setTransactionSuccessful();
+            }
+            finally {
+                db.endTransaction();
+            }
             return null;
         }
     }

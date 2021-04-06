@@ -40,38 +40,54 @@ public class WayBillInfo extends AppCompatActivity {
         Mileage = new ArrayList<>();
 
         //System.out.println(WayBillName);
-        SQLiteDatabase db2 = dbHelper.getReadableDatabase();
-        Cursor c = db2.rawQuery("select * from waybill where _id = ?", new String[] {WayBillName});
-        int id = c.getColumnIndex("_id");
-        int number = c.getColumnIndex("number");
-        int gas_in_tank = c.getColumnIndex("gas_in_tank");;
-        int mileage = c.getColumnIndex("mileage");
+        SQLiteDatabase dbReadWaybill = dbHelper.getReadableDatabase();
+        dbReadWaybill.beginTransaction();
+        try{
+            Cursor c = dbReadWaybill.rawQuery("select * from waybill where _id = ?", new String[] {WayBillName});
+            int id = c.getColumnIndex("_id");
+            int number = c.getColumnIndex("number");
+            int gas_in_tank = c.getColumnIndex("gas_in_tank");;
+            int mileage = c.getColumnIndex("mileage");
 
-        while (c.moveToNext()) {
-            //System.out.println(c.getInt(id));
-            //System.out.println(c.getInt(number));
-            WayBillNumber = String.valueOf(c.getInt(number));
-            WayBillGasInTankStr = String.valueOf((c.getInt(gas_in_tank)));
-            WayBillMileageStr = String.valueOf(c.getInt(mileage));
-            //WayBillId.setText(c.getInt(number));
+            while (c.moveToNext()) {
+                //System.out.println(c.getInt(id));
+                //System.out.println(c.getInt(number));
+                WayBillNumber = String.valueOf(c.getInt(number));
+                WayBillGasInTankStr = String.valueOf((c.getInt(gas_in_tank)));
+                WayBillMileageStr = String.valueOf(c.getInt(mileage));
+                //WayBillId.setText(c.getInt(number));
+            }
+            WayBillId.setText(WayBillNumber);
+            if (gas_in_tank != 0){
+                WayBillGasInTank.setText(WayBillGasInTankStr);
+            }
+            if (mileage != 0) {
+                WayBillMileage.setText(WayBillMileageStr);
+            }
+            dbReadWaybill.setTransactionSuccessful();
         }
-        WayBillId.setText(WayBillNumber);
+        finally {
+            dbReadWaybill.endTransaction();
+        }
 
-        Cursor c2 = db2.rawQuery("select * from destination where waybill_id = ?", new String[] {WayBillName});
-        while(c2.moveToNext()){
-            //RecordCount++;
-            Destination.add(c2.getString(2));
-            Mileage.add(c2.getString(3));
+        SQLiteDatabase dbReadDestination = dbHelper.getReadableDatabase();
+        dbReadDestination.beginTransaction();
+        try{
+            Cursor c_dest = dbReadDestination.rawQuery("select * from destination where waybill_id = ?", new String[] {WayBillName});
+
+            while(c_dest.moveToNext()){
+                //RecordCount++;
+                Destination.add(c_dest.getString(2));
+                Mileage.add(c_dest.getString(3));
+            }
+            dbReadDestination.setTransactionSuccessful();
+        }
+        finally {
+            dbReadDestination.endTransaction();
         }
         destinationAdapter = new DestinationAdapter(WayBillInfo.this, Destination, Mileage);
         RecyclerView.setAdapter(destinationAdapter);
         RecyclerView.setLayoutManager(new LinearLayoutManager(WayBillInfo.this));
 
-        if (gas_in_tank != 0){
-            WayBillGasInTank.setText(WayBillGasInTankStr);
-        }
-        if (mileage != 0) {
-            WayBillMileage.setText(WayBillMileageStr);
-        }
     }
 }
